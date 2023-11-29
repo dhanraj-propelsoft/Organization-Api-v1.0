@@ -48,4 +48,11 @@ class CommonService
       Log::info('CommonService > getCityByDistrictId function Return.' . json_encode($result));
       return $this->sendResponse($result, true);
     }
+    public function getDistrictByStateId($data)
+    {
+      Log::info('CommonService > getDistrictByStateId function Inside.' . json_encode($data));
+      $result = $this->commonInterface->getDistrictByStateId($data['stateId']);
+      Log::info('CommonService > getDistrictByStateId function Return.' . json_encode($result));
+      return $this->sendResponse($result, true);
+    }
 }

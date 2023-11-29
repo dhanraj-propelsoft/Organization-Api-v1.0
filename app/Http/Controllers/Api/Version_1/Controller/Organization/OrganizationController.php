@@ -41,6 +41,13 @@ class OrganizationController extends Controller
         Log::info('OrganizationController > getCityByDistrictId function Return.' . json_encode($response));
         return $response;
     }
+    public function getDistrictByStateId(Request $request)
+    {
+        Log::info('OrganizationController > getDistrictByStateId function Inside.' . json_encode($request->all()));
+        $response = $this->commonService->getDistrictByStateId($request->all());
+        Log::info('OrganizationController > getDistrictByStateId function Return.' . json_encode($response));
+        return $response;
+    }
     public function getOrganizationAccountByUid(Request $request)
     {
         Log::info('OrganizationController > getOrganizationAccountByUid function Inside.' . json_encode($request->all()));

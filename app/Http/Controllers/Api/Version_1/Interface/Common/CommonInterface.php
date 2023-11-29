@@ -6,5 +6,6 @@ interface commonInterface
 {
     public function getAllStates();
     public function getCityByDistrictId($districtId);
+    public function getDistrictByStateId($stateId);
 
 }
