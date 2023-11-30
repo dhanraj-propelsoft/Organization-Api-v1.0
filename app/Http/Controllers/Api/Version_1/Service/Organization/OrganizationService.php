@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Validator;
 
 class OrganizationService
 {
+    protected $organizationInterface, $commonService, $commonInterface;
+
     public function __construct(OrganizationInterface $organizationInterface, CommonService $commonService, CommonInterface $commonInterface)
     {
         $this->organizationInterface = $organizationInterface;
@@ -50,8 +52,10 @@ class OrganizationService
         $orgStructureId = isset($datas->orgStructureId) ? $datas->orgStructureId : null;
         $orgCategoryId = isset($datas->orgCategoryId) ? $datas->orgCategoryId : null;
         $orgOwnershipId = isset($datas->orgOwnershipId) ? $datas->orgOwnershipId : null;
-        $orgDetail = ['orgName' => $orgName, 'orgEmail' => $orgEmail, 'orgwebsite' => $orgwebsite,
-            'orgStructureId' => $orgStructureId, 'orgCategoryId' => $orgCategoryId, 'orgOwnershipId' => $orgOwnershipId];
+        $orgDetail = [
+            'orgName' => $orgName, 'orgEmail' => $orgEmail, 'orgwebsite' => $orgwebsite,
+            'orgStructureId' => $orgStructureId, 'orgCategoryId' => $orgCategoryId, 'orgOwnershipId' => $orgOwnershipId
+        ];
         $orgAddress = [];
         $doorNo = isset($datas->doorNo) ? $datas->doorNo : null;
         $buildingName = isset($datas->buildingName) ? $datas->buildingName : null;
@@ -77,18 +81,15 @@ class OrganizationService
                         $uniqueFileName[$i] = date('YmdHis') . '_' . uniqid() . '.jpg';
                         $savePath[$i] = storage_path('app/public/OrganizationDocument/' . $uniqueFileName[$i]);
                         File::put($savePath[$i], $datas->fileAttachment[$i]);
-
                     }
                     $orgDocModel = ['doctypeId' => $doctypeId, 'docNo' => $docNo, 'docValid' => $docValid, 'docFilePath' => isset($uniqueFileName[$i]) ? $uniqueFileName[$i] : ''];
 
                     array_push($orgDocModels, $orgDocModel);
-
                 }
             }
         }
         if (isset($datas->tempOrgId)) {
             $model = $this->organizationInterface->getTempOrganizationDataByTempId($datas->tempOrgId);
-
         } else {
             $model = new TempOrganization();
         }
@@ -136,7 +137,7 @@ class OrganizationService
     public function organizationIndex()
     {
         // $uid = auth()->user()->uid;
-            $uid=null;
+        $uid = null;
         $orgName = $this->organizationInterface->getOrganizationName($uid);
         $mainOrganization = $orgName->map(function ($OrgItem) {
             $OrgId = $OrgItem->id;
