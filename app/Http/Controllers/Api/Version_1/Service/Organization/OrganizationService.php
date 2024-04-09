@@ -134,10 +134,10 @@ class OrganizationService
         $model = $this->organizationInterface->changeDefaultOrganization($datas->uid);
         return $this->commonService->sendResponse($model, true);
     }
-    public function organizationIndex()
+    public function organizationIndex($datas)
     {
-        // $uid = auth()->user()->uid;
-        $uid = null;
+
+        $uid =  $datas['uid'];
         $orgName = $this->organizationInterface->getOrganizationName($uid);
         $mainOrganization = $orgName->map(function ($OrgItem) {
             $OrgId = $OrgItem->id;

@@ -8,4 +8,4 @@ Route::post('getCityByDistrictId', [OrganizationController::class,'getCityByDist
 Route::post('getDistrictByStateId', [OrganizationController::class,'getDistrictByStateId'])->name('getDistrictByStateId');
 Route::post('getOrganizationAccountByUid', [OrganizationController::class,'getOrganizationAccountByUid'])->name('getOrganizationAccountByUid');
 Route::post('setDefaultOrganization', [OrganizationController::class,'setDefaultOrganization'])->name('setDefaultOrganization');
-Route::get('organizationIndex', [OrganizationController::class,'organizationIndex'])->name('organizationIndex');
+Route::post('organizationIndex', [OrganizationController::class,'organizationIndex'])->name('organizationIndex');

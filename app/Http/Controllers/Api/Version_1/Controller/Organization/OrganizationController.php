@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Version_1\Service\Common\CommonService;
 
 class OrganizationController extends Controller
 {
+    protected $OrganizationService,$commonService;
     public function __construct(OrganizationService $OrganizationService,CommonService $commonService)
     {
         $this->OrganizationService = $OrganizationService;
@@ -62,9 +63,10 @@ class OrganizationController extends Controller
         Log::info('OrganizationController > setDefaultOrganization id function Return.' . json_encode($response));
         return $response;
     }
-    public function organizationIndex()
+    public function organizationIndex(Request $request)
     {
-        $response = $this->OrganizationService->organizationIndex();
+        Log::info('OrganizationController > organizationIndex function Inside.' . json_encode($request->all()));
+        $response = $this->OrganizationService->organizationIndex($request->all());
         Log::info('OrganizationController > organizationIndex function Return.' . json_encode($response));
         return $response;
     }
