@@ -12,6 +12,7 @@ use App\Models\PimsPlan;
 use App\Models\PimsPlanApplicapable;
 use App\Models\PimsSubscription;
 use Illuminate\Http\Request;
+use Log;
 
 class OrganizationDetailController extends Controller
 {
@@ -20,38 +21,69 @@ class OrganizationDetailController extends Controller
 
         $modules = PimsSubscription::where('org_id', 1)->first();
         $planId = $modules->plan_id;
-
-     
-
         $packageApplicableId = PimsPlan::where('id', $planId)->first()->package_applicapable_id;
         $packageApplicapableModule = PimsPackageApplicable::where('id', $packageApplicableId)->first()->module_id;
         $ModuleArray = json_decode($packageApplicapableModule, true);
+
         $defaulDatas = [];
+        // $defaulDatas['module_name'] = [];
+
+        $organizedData = [];
+
         for ($i = 0; $i < count($ModuleArray); $i++) {
             $moduleId = $ModuleArray[$i];
             $moduleName = PimsModule::where('id', $moduleId)->first()->display_name;
-            $PlanApplicapable = PimsPlanApplicapable::where('id', $planId)->get();
-            $AllModuleAndMenuFunctionArray = [];
-            for ($j = 0; $j < count($PlanApplicapable); $j++) {
-                $menuModule = PimsMenu::where('id', $PlanApplicapable[$j]->menu_id)->first()->menu_name;
 
-                $menufunctionIds = $PlanApplicapable[$j]->menu_function_id;
-                $MenuFunctionArray = json_decode($menufunctionIds, true);
-                $AllMenuFunctionArray = [];
-                for ($k = 0; $k < count($MenuFunctionArray); $k++) {
-                    $menufunctionId = $MenuFunctionArray[$k];
+            $moduleData = [
+                'moduleName' => $moduleName,
+                'menus' => []
+            ];
 
-                    $menuFunctionModule = PimsMenuFunction::where('id', $menufunctionId)->first()->function_name;
-                    array_push($AllMenuFunctionArray, $menuFunctionModule);
+            $PlanApplicapable = PimsPlanApplicapable::with([
+                'menu' => function ($query) use ($moduleId) {
+                    $query->where('module_id', $moduleId);
                 }
-                $returnModAndMenu = ['menu' => $menuModule, 'menufunction' => $AllMenuFunctionArray];
-                array_push($AllModuleAndMenuFunctionArray, $returnModAndMenu);
+            ])->where('plan_id', $planId)->get();
+
+            $menuDataArray = [];
+
+            for ($j = 0; $j < count($PlanApplicapable); $j++) {
+                $menuId = $PlanApplicapable[$j]->menu_id;
+                $MenuName = PimsMenu::where('id', $menuId)->first()->menu_name;
+
+                // Initialize the menu item with its name and an empty functions array
+                $menuData = [
+                    'menuName' => $MenuName,
+                    'menuFunctions' => []
+                ];
+
+                $menuFunctionIds = $PlanApplicapable[$j]->menu_function_id;
+                $MenuFunctionIdArray = json_decode($menuFunctionIds, true);
+
+                for ($k = 0; $k < count($MenuFunctionIdArray); $k++) {
+                    $mfId = $MenuFunctionIdArray[$k];
+                    $menuFunctionname = PimsMenuFunction::where('id', $mfId)->first()->function_name;
+
+                    $menuFunctionData = [
+                        'functionName' => $menuFunctionname
+                        // You can add more data here if needed
+                    ];
+                  
+                    $menuData['menuFunctions'][] = $menuFunctionData;
+                }
+
+
+                $moduleData['menus'][] = $menuData;
+
             }
 
-            $returnModAndMenuAndMenuFunction = ['moduleName' => $moduleName, 'AllModuleAndMenuFunctionArray' => $AllModuleAndMenuFunctionArray];
-            array_push($defaulDatas, $returnModAndMenuAndMenuFunction);
+            // Debug the result
+            $organizedData[] = $moduleData;
+
         }
-        dd($defaulDatas);
-        return response()->json($defaulDatas);
+
+  
+
+        return response()->json($organizedData);
     }
 }

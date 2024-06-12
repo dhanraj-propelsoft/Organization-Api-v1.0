@@ -20,5 +20,3 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 include_once('version_1/organization.php');
-Route::get('OrganizationPlanAndModules', [OrganizationDetailController::class,'OrganizationPlanAndModules'])->name('OrganizationPlanAndModules');
-
