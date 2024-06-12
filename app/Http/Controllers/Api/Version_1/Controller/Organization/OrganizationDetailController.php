@@ -19,7 +19,7 @@ class OrganizationDetailController extends Controller
     public function OrganizationPlanAndModules()
     {
 
-        $modules = PimsSubscription::where('org_id', 1)->first();
+        $modules = PimsSubscription::where('org_id', 2)->first();
         $planId = $modules->plan_id;
         $packageApplicableId = PimsPlan::where('id', $planId)->first()->package_applicapable_id;
         $packageApplicapableModule = PimsPackageApplicable::where('id', $packageApplicableId)->first()->module_id;
@@ -81,9 +81,6 @@ class OrganizationDetailController extends Controller
             $organizedData[] = $moduleData;
 
         }
-
-  
-
         return response()->json($organizedData);
     }
 }
