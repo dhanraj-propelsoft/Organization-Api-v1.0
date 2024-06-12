@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\Version_1\Controller\Organization\OrganizationController;
+use App\Http\Controllers\Api\Version_1\Controller\Organization\OrganizationDetailController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,3 +20,5 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 include_once('version_1/organization.php');
+Route::get('OrganizationPlanAndModules', [OrganizationDetailController::class,'OrganizationPlanAndModules'])->name('OrganizationPlanAndModules');
+
