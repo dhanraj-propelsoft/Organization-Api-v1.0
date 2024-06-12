@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\Api\Version_1\Controller\Organization\OrganizationDetailController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Version_1\Controller\Organization\OrganizationController;
 
@@ -9,3 +10,6 @@ Route::post('getDistrictByStateId', [OrganizationController::class,'getDistrictB
 Route::post('getOrganizationAccountByUid', [OrganizationController::class,'getOrganizationAccountByUid'])->name('getOrganizationAccountByUid');
 Route::post('setDefaultOrganization', [OrganizationController::class,'setDefaultOrganization'])->name('setDefaultOrganization');
 Route::post('organizationIndex', [OrganizationController::class,'organizationIndex'])->name('organizationIndex');
+//dhana
+Route::get('OrganizationPlanAndModules', [OrganizationDetailController::class,'OrganizationPlanAndModules'])->name('OrganizationPlanAndModules');
+
