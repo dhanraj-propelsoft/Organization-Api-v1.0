@@ -43,7 +43,7 @@ class OrganizationService
     public function convertTempOrganization($datas)
     {
         //  $uid = auth()->user()->uid;
-        $uid = null;
+        $uid = $datas->uid;
 
         $orgDetail = [];
         $orgName = ($datas->orgName) ? $datas->orgName : null;
