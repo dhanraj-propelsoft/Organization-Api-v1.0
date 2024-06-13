@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Version_1\Controller\Organization;
 
+use App\Http\Controllers\Api\Version_1\Service\Common\CommonService;
 use App\Http\Controllers\Controller;
 
 use App\Models\PimsMenu;
@@ -16,6 +17,14 @@ use Log;
 
 class OrganizationDetailController extends Controller
 {
+    protected $commonService;
+
+    public function __construct(CommonService $commonService)
+    {
+
+        $this->commonService = $commonService;
+
+    }
     public function OrganizationPlanAndModules()
     {
 
