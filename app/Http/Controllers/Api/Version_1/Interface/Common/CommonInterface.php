@@ -8,4 +8,7 @@ interface commonInterface
     public function getCityByDistrictId($districtId);
     public function getDistrictByStateId($stateId);
 
+
+    public function  getDataBaseNameByOrgId($orgId);
+
 }

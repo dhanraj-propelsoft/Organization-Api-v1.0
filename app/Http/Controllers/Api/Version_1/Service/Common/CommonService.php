@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Api\Version_1\Service\Common;
 
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Api\Version_1\Interface\Common\CommonInterface;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Facades\Session;
 class CommonService
 {
+    protected $commonInterface;
     public function __construct(commonInterface $commonInterface)
     {
       $this->commonInterface = $commonInterface;
@@ -54,5 +58,18 @@ class CommonService
       $result = $this->commonInterface->getDistrictByStateId($data['stateId']);
       Log::info('CommonService > getDistrictByStateId function Return.' . json_encode($result));
       return $this->sendResponse($result, true);
+    }
+
+    public function getOrganizationDatabaseByOrgId($orgId)
+    {
+        $result = $this->commonInterface->getDataBaseNameByOrgId($orgId);
+        
+        session::put('currentDatabase', $result->db_name);
+        Config::set('database.connections.mysql_external.database', $result->db_name);
+        DB::purge('mysql');
+        DB::reconnect('mysql');
+      
+        Log::info('CommonService > getOrganizationDatabaseByOrgId function Return.' . json_encode($result));
+        return $result;
     }
 }

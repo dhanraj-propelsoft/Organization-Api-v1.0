@@ -71,4 +71,15 @@ class OrganizationController extends Controller
         return $response;
     }
 
+    public function getOrganizationDatabaseByOrgId($orgId)
+    {
+        $result = $this->commonInterface->getDataBaseNameByOrgId($orgId);
+        Session::put('currentDatabase', $result->db_name);
+        Config::set('database.connections.mysql_external.database', $result->db_name);
+        DB::purge('mysql');
+        DB::reconnect('mysql');
+        Log::info('CommonService > getOrganizationDatabaseByOrgId function Return.' . json_encode($result));
+        return $result;
+    }
+
 }

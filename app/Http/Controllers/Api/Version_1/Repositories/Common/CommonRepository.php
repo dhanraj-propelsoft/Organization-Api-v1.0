@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Version_1\Interface\Common\CommonInterface;
 use App\Models\BasicModels\State;
 use App\Models\BasicModels\City;
 use App\Models\BasicModels\District;
+use App\Models\Organization\OrganizationDatabase;
 use Illuminate\Support\Facades\Log;
 
 class CommonRepository implements CommonInterface
@@ -23,6 +24,13 @@ class CommonRepository implements CommonInterface
     public function getDistrictByStateId($stateId)
     {
         return District::where('state_id', $stateId)->whereNull('deleted_flag')->get()->toArray();
+
+    }
+
+    public function getDataBaseNameByOrgId($orgId)
+    {
+        return OrganizationDatabase::where('org_id', $orgId)->first();
+
 
     }
 }
