@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Version_1\Service\Organization;
 use App\Http\Controllers\Api\Version_1\Interface\Common\CommonInterface;
 use App\Http\Controllers\Api\Version_1\Interface\Organization\OrganizationInterface;
 use App\Http\Controllers\Api\Version_1\Service\Common\CommonService;
+use App\Models\Organization\Organization;
 use App\Models\Organization\TempOrganization;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -31,20 +32,18 @@ class OrganizationService
             'pinCode' => 'required|numeric',
         ]);
         if ($validator->fails()) {
-            return response(['errors' => $validator->errors()->all()], 422);
+            return ['status'=>false, 'errors' => $validator->errors()->all()];
         } else {
             $datas = (object) $datas;
-
             $convertTempOrg = $this->convertTempOrganization($datas);
             $storeTempOrg = $this->organizationInterface->storeTempOrganization($convertTempOrg);
-            return $this->commonService->sendResponse($storeTempOrg, true);
+            return ['status' => true, 'data' => $storeTempOrg];
         }
     }
     public function convertTempOrganization($datas)
     {
         //  $uid = auth()->user()->uid;
         $uid = $datas->uid;
-
         $orgDetail = [];
         $orgName = ($datas->orgName) ? $datas->orgName : null;
         $orgEmail = ($datas->orgEmail) ? $datas->orgEmail : null;
@@ -111,28 +110,35 @@ class OrganizationService
         $orgCategory = $this->organizationInterface->pimsOrganizationCategory();
         $orgOwnerShip = $this->organizationInterface->pimsOrganizationOwnerShip();
         $orgDocType = $this->organizationInterface->pimsOrganizationDocumentType();
-        $result = ['state' => $state, 'orgStructure' => $orgStructure, 'orgCategory' => $orgCategory, 'orgOwnerShip' => $orgOwnerShip, 'orgDocType' => $orgDocType];
-        return $this->commonService->sendResponse($result, true);
+        return ['status' => true, 'state' => $state, 'orgStructure' => $orgStructure, 'orgCategory' => $orgCategory, 'orgOwnerShip' => $orgOwnerShip, 'orgDocType' => $orgDocType];
     }
     public function getOrganizationAccountByUid($uid)
     {
         Log::info('OrganizationService > getOrganizationAccountByUid function Inside.' . json_encode($uid));
         $OrganizationAccountModel = $this->organizationInterface->getOrganizationAccountByUid($uid);
-        $transformed = $OrganizationAccountModel->map(function ($item) {
-            $orgId = $item->organization_id;
-            $defaultOrgStatus = $item->default_org;
-            $pfmActiveStatus = $item->pfm_active_status_id;
-            $orgName = $item->organizationDetail->org_name;
-            return ['orgId' => $orgId, 'org_name' => $orgName, 'pfm_stage_id' => $pfmActiveStatus, 'default_org' => $defaultOrgStatus];
-        });
-        return $this->commonService->sendResponse($transformed, true);
+        if (count($OrganizationAccountModel)) {
+            $transformed = $OrganizationAccountModel->map(function ($item) {
+                $orgId = $item->organization_id;
+                $defaultOrgStatus = $item->default_org;
+                $pfmActiveStatus = $item->pfm_active_status_id;
+                $orgName = $item->organizationDetail->org_name;
+                return ['orgId' => $orgId, 'org_name' => $orgName, 'pfm_stage_id' => $pfmActiveStatus, 'default_org' => $defaultOrgStatus];
+            });
+            return ['status' => true, 'data' => $transformed];
+        } else {
+            return ['status' => false, 'message' => "Orgainzation Not Founded"];
+        }
     }
     public function setDefaultOrganization($datas)
     {
 
         $datas = (object) $datas;
         $model = $this->organizationInterface->changeDefaultOrganization($datas->uid);
-        return $this->commonService->sendResponse($model, true);
+        if ($model) {
+            return ['status' => true, 'data' => $datas];
+        } else {
+            return ['status' =>false, 'message'=>'Organization not founder'];
+        }
     }
     public function organizationIndex($datas)
     {
@@ -144,15 +150,18 @@ class OrganizationService
             $orgName = $OrgItem->OrganizationDetail->org_name;
             return ['OrgName' => $orgName, 'OrgId' => $OrgId];
         });
-
         $tempOrg = $this->organizationInterface->getAllTempOrganizations($uid);
         $tempOrganization = $tempOrg->map(function ($tempOrgItem) {
             $tempOrgId = $tempOrgItem->id;
             $orgDetails = json_decode($tempOrgItem->organization_detail, true);
-            return ['tempOrgName' => $orgDetails['orgName'], 'tempOrgId' => $tempOrgId];
+            return [ 'tempOrgName' => $orgDetails['orgName'], 'tempOrgId' => $tempOrgId];
         });
+        if($tempOrganization && $mainOrganization)
+        {
+            return ['status' => true, 'tempOrg' => $tempOrganization, 'mainOrg' => $mainOrganization];
 
-        $result = ['tempOrg' => $tempOrganization, 'mainOrg' => $mainOrganization];
-        return $this->commonService->sendResponse($result, true);
+        }else{
+            return ['status' => false, 'message' => 'check tempOrganization & mainOrganization'];
+        }
     }
 }
