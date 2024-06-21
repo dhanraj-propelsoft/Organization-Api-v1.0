@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\Version_1\Controller\Organization\OrganizationContr
 
 //dhana
 
-// Route::middleware(['OnlyGateWay.access'])->group(function () {
+ Route::middleware(['OnlyGateWay.access'])->group(function () {
     
     Route::post('tempOrganizationStore', [OrganizationController::class, 'tempOrganizationStore'])->name('tempOrganizationStore');
     Route::get('organizationMasterDatas', [OrganizationController::class, 'organizationMasterDatas'])->name('organizationMasterDatas');
@@ -18,4 +18,9 @@ use App\Http\Controllers\Api\Version_1\Controller\Organization\OrganizationContr
 
     Route::post('OrganizationPlanAndModules', [OrganizationDetailController::class, 'OrganizationPlanAndModules'])->name('OrganizationPlanAndModules');
 
-// });
+    
+    Route::post('getOrganiationPlanBasedModules', [OrganizationDetailController::class, 'getOrganiationPlanBasedModules'])->name('getOrganiationPlanBasedModules');
+    Route::post('getmemberMenusAndFunctionByModuleId', [OrganizationDetailController::class, 'getmemberMenusAndFunctionByModuleId'])->name('getmemberMenusAndFunctionByModuleId');
+   
+
+ });
