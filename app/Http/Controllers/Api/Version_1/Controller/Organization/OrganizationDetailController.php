@@ -34,6 +34,7 @@ class OrganizationDetailController extends Controller
         $uid = $request->get("uid");
         $orgId = $request->get('orgId');
 
+        $connectDb = $this->commonService->getOrganizationDatabaseByOrgId($orgId);
         $getSubscriptionModule = PimsSubscription::where('org_id', $orgId)->first();
 
         $planId = $getSubscriptionModule->plan_id;
@@ -42,10 +43,18 @@ class OrganizationDetailController extends Controller
 
         $packageApplicapableModule = PimsPackageApplicable::where('id', $packageApplicableId)->first()->module_id;
 
-        $ModuleArray = json_decode($packageApplicapableModule, true);
+        $ModuleDataArray = json_decode($packageApplicapableModule, true);
 
 
+        $getMemberApplicable = MemberRolesPoc::with('roleModule')
+            ->where('uid', $uid)
+            ->first();
 
+        $roleMatchableModule = $getMemberApplicable['roleModule'];
+        $moduleIdsString = $roleMatchableModule->module_id;
+        $moduleIds = json_decode($moduleIdsString, true);
+
+        $ModuleArray = array_intersect($ModuleDataArray, $moduleIds);
 
         $organizedData = [];
 
@@ -81,162 +90,179 @@ class OrganizationDetailController extends Controller
 
         $moduleName = PimsModule::where('id', $moduleId)->first();
 
-        $connectDb = $this->commonService->getOrganizationDatabaseByOrgId($orgId);
 
-        $getLoginedMemberRoleId = MemberRolesPoc::where('uid', $uid)->first()->role_id;
-
-        $getMembermenuModule = MemberMenuPermissionPoc::where('role_id', $getLoginedMemberRoleId)->first()->menu_id;
-        $memberMenuModuleArray = json_decode($getMembermenuModule, true);
-
-     
-
-        $organizedData = [];
-        for ($j = 0; $j < count($memberMenuModuleArray); $j++) {
-
-
-            $menuId = $memberMenuModuleArray[$j];
-            $MenuName = PimsMenu::where('id', $menuId)->first()->menu_name;
-
-            $getMembermenuFunctionModule = MemberMenuFunctionPermissionPoc::where('role_id', $getLoginedMemberRoleId)
-                ->where('menu_id', $menuId)
-                ->first()->menu_function_id;
-
-            $memberMenuFunctionModuleArray = json_decode($getMembermenuFunctionModule, true);
-
-
-
-            // Initialize the menu item with its name and an empty functions array
-            $menuData = [
-                'menuName' => $MenuName,
-                'menuFunctions' => []
-            ];
-
-
-            for ($k = 0; $k < count($memberMenuFunctionModuleArray); $k++) {
-                $mfId = $memberMenuFunctionModuleArray[$k];
-
-                $menuFunctionname = PimsMenuFunction::where('id', $mfId)->first()->function_name;
-
-                $menuFunctionData = [
-                    'functionName' => $menuFunctionname
-                    // You can add more data here if needed
-                ];
-
-                $menuData['menuFunctions'][] = $menuFunctionData;
-            }
-
-
-            $moduleData['menus'][] = $menuData;
-
-            $organizedData[] = $moduleData;
-        }
-        return response()->json($organizedData);
-    }
-    public function OrganizationPlanAndModules(Request $request)
-    {
-
-
-        $uid = $request->get("uid");
-        $orgId = $request->get('orgId');
 
         $connectDb = $this->commonService->getOrganizationDatabaseByOrgId($orgId);
 
         $getLoginedMemberRoleId = MemberRolesPoc::where('uid', $uid)->first()->role_id;
 
-        $getMemberModules = MemberModulePermissionPoc::where('role_id', $getLoginedMemberRoleId)->first()->module_id;
-        $getMemberModuleArray = json_decode($getMemberModules, true);
+        $getMembermenuModule = MemberMenuPermissionPoc::where('role_id', $getLoginedMemberRoleId)
+            ->where('module_id', $moduleId)
+            ->first();
 
-        $modules = PimsSubscription::where('org_id', $orgId)->first();
-
-        $planId = $modules->plan_id;
-
-        $packageApplicableId = PimsPlan::where('id', $planId)->first()->package_applicapable_id;
-
-        $packageApplicapableModule = PimsPackageApplicable::where('id', $packageApplicableId)->first()->module_id;
-
-        $ModuleArray = json_decode($packageApplicapableModule, true);
-
-        $ModuleIntersections = array_intersect($ModuleArray, $getMemberModuleArray);
-
-
-        $defaulDatas = [];
-        // $defaulDatas['module_name'] = [];
-
-        $organizedData = [];
-
-        for ($i = 0; $i < count($ModuleIntersections); $i++) {
-
-            $moduleId = $ModuleIntersections[$i];
-
-            $moduleName = PimsModule::where('id', $moduleId)->first();
-
-            $moduleData = [
-                'moduleName' => $moduleName->display_name,
-                'moduleIcon' => $moduleName->icon_data,
-                'menus' => []
-            ];
-
-
-            $getMembermenuModule = MemberMenuPermissionPoc::where('role_id', $getLoginedMemberRoleId)->first()->menu_id;
-            $memberMenuModuleArray = json_decode($getMembermenuModule, true);
 
 
 
 
-            // $PlanApplicapable = PimsPlanApplicapable::with([
-            //     'menu' => function ($query) use ($moduleId) {
-            //         $query->where('module_id', $moduleId);
-            //     }
-            // ])
-            //     ->where('plan_id', $planId)
-            //     ->whereIn('menu_id', $memberMenuModuleArray)
-            //     ->get();
-
-            $menuDataArray = [];
+        $organizedData = [];
+        if ($getMembermenuModule) {
+            $memberMenuModuleArray = json_decode($getMembermenuModule->menu_id, true);
 
             for ($j = 0; $j < count($memberMenuModuleArray); $j++) {
 
 
                 $menuId = $memberMenuModuleArray[$j];
-                $MenuName = PimsMenu::where('id', $menuId)->first()->menu_name;
+
+                $menuModel = PimsMenu::where('id', $menuId)->first();
+
+                Log::info("menuModel" . json_encode($menuModel));
 
                 $getMembermenuFunctionModule = MemberMenuFunctionPermissionPoc::where('role_id', $getLoginedMemberRoleId)
                     ->where('menu_id', $menuId)
-                    ->first()->menu_function_id;
+                    ->first();
 
-                $memberMenuFunctionModuleArray = json_decode($getMembermenuFunctionModule, true);
+
 
 
 
                 // Initialize the menu item with its name and an empty functions array
                 $menuData = [
-                    'menuName' => $MenuName,
+                    'menuName' => $menuModel->menu_name,
+                    'menuId' => $menuId,
+                    'routeName' => $menuModel->route_name,
                     'menuFunctions' => []
                 ];
+                Log::info("menuData" . json_encode($menuData));
 
+                if ($getMembermenuFunctionModule) {
+                    $memberMenuFunctionModuleArray = json_decode($getMembermenuFunctionModule->menu_function_id, true);
+                    for ($k = 0; $k < count($memberMenuFunctionModuleArray); $k++) {
+                        $mfId = $memberMenuFunctionModuleArray[$k];
 
-                for ($k = 0; $k < count($memberMenuFunctionModuleArray); $k++) {
-                    $mfId = $memberMenuFunctionModuleArray[$k];
+                        $menuFunctionname = PimsMenuFunction::where('id', $mfId)->first()->function_name;
 
-                    $menuFunctionname = PimsMenuFunction::where('id', $mfId)->first()->function_name;
+                        $menuFunctionData = [
+                            'functionName' => $menuFunctionname,
+                            'functionId' => $mfId
+                            // You can add more data here if needed
+                        ];
 
-                    $menuFunctionData = [
-                        'functionName' => $menuFunctionname
-                        // You can add more data here if needed
-                    ];
-
-                    $menuData['menuFunctions'][] = $menuFunctionData;
+                        $menuData['menuFunctions'][] = $menuFunctionData;
+                    }
                 }
 
-
                 $moduleData['menus'][] = $menuData;
-
+                Log::info("moduleData" . json_encode($moduleData));
+                $organizedData[] = $menuData;
             }
-
-            // Debug the result
-            $organizedData[] = $moduleData;
-
         }
         return response()->json($organizedData);
     }
+    // public function OrganizationPlanAndModules(Request $request)
+    // {
+
+
+    //     $uid = $request->get("uid");
+    //     $orgId = $request->get('orgId');
+
+    //     $connectDb = $this->commonService->getOrganizationDatabaseByOrgId($orgId);
+
+    //     $getLoginedMemberRoleId = MemberRolesPoc::where('uid', $uid)->first()->role_id;
+
+    //     $getMemberModules = MemberModulePermissionPoc::where('role_id', $getLoginedMemberRoleId)->first()->module_id;
+    //     $getMemberModuleArray = json_decode($getMemberModules, true);
+
+    //     $modules = PimsSubscription::where('org_id', $orgId)->first();
+
+    //     $planId = $modules->plan_id;
+
+    //     $packageApplicableId = PimsPlan::where('id', $planId)->first()->package_applicapable_id;
+
+    //     $packageApplicapableModule = PimsPackageApplicable::where('id', $packageApplicableId)->first()->module_id;
+
+    //     $ModuleArray = json_decode($packageApplicapableModule, true);
+
+    //     $ModuleIntersections = array_intersect($ModuleArray, $getMemberModuleArray);
+
+
+    //     $defaulDatas = [];
+    //     // $defaulDatas['module_name'] = [];
+
+    //     $organizedData = [];
+
+    //     for ($i = 0; $i < count($ModuleIntersections); $i++) {
+
+    //         $moduleId = $ModuleIntersections[$i];
+
+    //         $moduleName = PimsModule::where('id', $moduleId)->first();
+
+    //         $moduleData = [
+    //             'moduleName' => $moduleName->display_name,
+    //             'moduleIcon' => $moduleName->icon_data,
+    //             'menus' => []
+    //         ];
+
+
+    //         $getMembermenuModule = MemberMenuPermissionPoc::where('role_id', $getLoginedMemberRoleId)->first()->menu_id;
+    //         $memberMenuModuleArray = json_decode($getMembermenuModule, true);
+
+
+
+
+    //         // $PlanApplicapable = PimsPlanApplicapable::with([
+    //         //     'menu' => function ($query) use ($moduleId) {
+    //         //         $query->where('module_id', $moduleId);
+    //         //     }
+    //         // ])
+    //         //     ->where('plan_id', $planId)
+    //         //     ->whereIn('menu_id', $memberMenuModuleArray)
+    //         //     ->get();
+
+    //         $menuDataArray = [];
+
+    //         for ($j = 0; $j < count($memberMenuModuleArray); $j++) {
+
+
+    //             $menuId = $memberMenuModuleArray[$j];
+    //             $MenuName = PimsMenu::where('id', $menuId)->first()->menu_name;
+
+    //             $getMembermenuFunctionModule = MemberMenuFunctionPermissionPoc::where('role_id', $getLoginedMemberRoleId)
+    //                 ->where('menu_id', $menuId)
+    //                 ->first()->menu_function_id;
+
+    //             $memberMenuFunctionModuleArray = json_decode($getMembermenuFunctionModule, true);
+
+
+
+    //             // Initialize the menu item with its name and an empty functions array
+    //             $menuData = [
+    //                 'menuName' => $MenuName,
+    //                 'menuFunctions' => []
+    //             ];
+
+
+    //             for ($k = 0; $k < count($memberMenuFunctionModuleArray); $k++) {
+    //                 $mfId = $memberMenuFunctionModuleArray[$k];
+
+    //                 $menuFunctionname = PimsMenuFunction::where('id', $mfId)->first()->function_name;
+
+    //                 $menuFunctionData = [
+    //                     'functionName' => $menuFunctionname
+    //                     // You can add more data here if needed
+    //                 ];
+
+    //                 $menuData['menuFunctions'][] = $menuFunctionData;
+    //             }
+
+
+    //             $moduleData['menus'][] = $menuData;
+
+    //         }
+
+    //         // Debug the result
+    //         $organizedData[] = $moduleData;
+
+    //     }
+    //     return response()->json($organizedData);
+    // }
 }

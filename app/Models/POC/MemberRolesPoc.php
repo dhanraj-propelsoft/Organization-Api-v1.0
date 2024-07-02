@@ -20,4 +20,10 @@ class MemberRolesPoc extends Model
     {
         return $this->hasOne(Role::class, 'id', 'role_id');
     }
+
+    
+    public function roleModule()
+    {
+        return $this->hasOne(MemberModulePermissionPoc::class, 'role_id', 'role_id');
+    }
 }

@@ -18,9 +18,10 @@ use App\Http\Controllers\Api\Version_1\Controller\Organization\OrganizationContr
 
     Route::post('OrganizationPlanAndModules', [OrganizationDetailController::class, 'OrganizationPlanAndModules'])->name('OrganizationPlanAndModules');
 
-    
     Route::post('getOrganiationPlanBasedModules', [OrganizationDetailController::class, 'getOrganiationPlanBasedModules'])->name('getOrganiationPlanBasedModules');
-    Route::post('getmemberMenusAndFunctionByModuleId', [OrganizationDetailController::class, 'getmemberMenusAndFunctionByModuleId'])->name('getmemberMenusAndFunctionByModuleId');
+   
    
 
  });
+ Route::post('getmemberMenusAndFunctionByModuleId', [OrganizationDetailController::class, 'getmemberMenusAndFunctionByModuleId'])->name('getmemberMenusAndFunctionByModuleId');
+   
